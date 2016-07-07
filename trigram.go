@@ -13,7 +13,7 @@ func (d docList) Less(i, j int) bool { return d[i] < d[j] }
 //The trigram indexing result include all Document IDs and its Frequence in that document
 type IndexResult struct {
 	//Save all trigram mapping docID
-	DocIDs map[int]bool
+	DocIDs map[int]struct{}
 }
 
 // Extract one string to trigram list
@@ -55,12 +55,12 @@ func (t *TrigramIndex) Add(doc string) int {
         mapRet, exist := t.TrigramMap[tg]
 		if !exist {
 			t.TrigramMap[tg] = IndexResult{
-                map[int]bool{newDocID: true},
+                map[int]struct{}{newDocID: struct{}{}},
             }
 		} else {
 			//trigram already exist on this doc
 			if _, docExist := mapRet.DocIDs[newDocID]; !docExist {
-				mapRet.DocIDs[newDocID] = true
+				mapRet.DocIDs[newDocID] = struct{}{}
 			}
             t.TrigramMap[tg] = mapRet
 		}
@@ -71,9 +71,9 @@ func (t *TrigramIndex) Add(doc string) int {
 }
 
 //This function help you to intersect two map
-func IntersectTwoMap(IDsA, IDsB map[int]bool) map[int]bool {
-	var retIDs map[int]bool   //for traversal it is smaller one
-	var checkIDs map[int]bool //for checking it is bigger one
+func IntersectTwoMap(IDsA, IDsB map[int]struct{}) map[int]struct{} {
+	var retIDs map[int]struct{}   //for traversal it is smaller one
+	var checkIDs map[int]struct{} //for checking it is bigger one
 	if len(IDsA) >= len(IDsB) {
 		retIDs = IDsB
 		checkIDs = IDsA
@@ -118,7 +118,7 @@ func (t *TrigramIndex) Query(doc string) docList {
 }
 
 //Transfer map to slice for return result
-func getMapToSlice(inMap map[int]bool) docList {
+func getMapToSlice(inMap map[int]struct{}) docList {
 	var retSlice docList
 	for k, _ := range inMap {
 		retSlice = append(retSlice, k)
